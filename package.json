@@ -1,0 +1,29 @@
+{
+  "name": "myhome2ubackend",
+  "version": "1.0.0",
+  "description": "MyHome2U is a complete property backEnd project",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon   src/index.js"
+  },
+  "keywords": [
+    "Node",
+    "js",
+    "BackEnd",
+    "Express",
+    "Mongoose"
+  ],
+  "author": "Mohamed Abdihakin",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.1"
+  }
+}
