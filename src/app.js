@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
-const  rateLimit  = require("express-rate-limit");
 
 
 const UserRouter = require("./Router/UserRouter.js");
@@ -19,13 +18,6 @@ app.use(
 
 // Rate limiter middleware
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later."
-});
-
-app.use(limiter);
 
 // Middleware to parse JSON and URL-encoded data
 app.use(cookieParser());
@@ -50,13 +42,11 @@ app.use((req, res, next) => {
 });
 
 // server error handling
-app.use((err, req, res, next) => {
-  return res.status(err.status || 500).json({
-    error: {
-      success: false,
-      message: err.message,
-      stack: process.env.NODE_ENV === "development" ? err.stack : null,
-    },
+app.use((error, req, res, next) => {
+  res.status(error.status || 500).json({
+    success: false,
+    message: error.message,
+    stack: process.env.NODE_ENV === "development" ? error.stack : null,
   });
 });
 
