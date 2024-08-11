@@ -3,8 +3,6 @@ const express = require("express");
 const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
 
-
-const UserRouter = require("./Router/UserRouter.js");
 const cors = require("cors");
 const app = express();
 
@@ -13,16 +11,17 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL, // Allow all origins
     credentials: true,
+    httpOnly: true, // Set to true to prevent client-side JavaScript from accessing the cookie
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
 
 // Rate limiter middleware
 
-
 // Middleware to parse JSON and URL-encoded data
 app.use(cookieParser());
-app.use(express.json({ limit: "16kb" }));
-app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.json({ limit: "10mb" })); // Increase limit to 10MB
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Serve static files from the "public" directory
 app.use(express.static("public"));
@@ -33,7 +32,17 @@ app.get("/", (req, res) => {
   res.send("WELCOME MY HOME TO YOU API!");
 });
 
+const UserRouter = require("./Router/UserRouter.js");
+const PropertyRouter = require("./Router/PropertyListing.js");
+const BookingRouter = require("./Router/Booking.js");
+const ContractRouter = require("./Router/Contract.js");
+const BillRouter = require("./Router/Bills.js");
+
 app.use("/api/MyHome2U/user", UserRouter);
+app.use("/api/MyHome2U/property", PropertyRouter);
+app.use("/api/MyHome2U/Booking", BookingRouter);
+app.use("/api/MyHome2U/contract", ContractRouter);
+app.use("/api/MyHome2U/bills", BillRouter);
 
 // client error handling
 

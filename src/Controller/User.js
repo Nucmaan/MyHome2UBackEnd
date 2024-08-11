@@ -3,60 +3,132 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const ErrorHandler = require("../Utils/error.js");
+const cloudinary = require("../MiddleWare/Cloudinary.js");
 
 const frontendUrl = process.env.FRONTEND_URL;
+const mongoose = require('mongoose');
 
-const Register = async (req, res) => {
+const getSingleUser = async (req, res, next) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { id } = req.params;
 
-    // Validate request
-    if (!(name && email && password && phone)) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide all required fields",
-      });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(ErrorHandler(400, "invalid_user_id"));
     }
 
-    // Check if user already exists
+    const user = await User.findById(id);
+    if (!user) {
+      return next(ErrorHandler(400, "user not found in database"));
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "User data fetched successfully",
+      user
+    });
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
+const Register = async (req, res, next) => {
+  try {
+    const { name, email, password, phone, avatar, role, isActive } = req.body;
+
+    if (!(name && email && password && phone )) {
+      return next(ErrorHandler(404, "all fields are required"));
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already exists. Use another email address.",
-      });
+      return next(ErrorHandler(400, "Email already exists and does not exist"));
     }
 
-    // Parse salt rounds from environment variable
     const saltRounds = parseInt(process.env.HashPassword, 10);
     if (isNaN(saltRounds)) {
       throw new Error("Invalid salt rounds value in environment variable");
     }
 
-    // Hash the password
     const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
-    // Create new user
+    const result = await cloudinary.uploader.upload(avatar, {
+      folder: "MyHome2U/Users",
+    });
+    
+    const profile_Image_Url = result.secure_url;
+    const public_id = result.public_id;
+
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
       phone,
+      avatar: {
+        public_id: public_id,
+        url: profile_Image_Url,
+      },
+      role,
+      isActive
     });
 
-    // Respond with success
     res.status(201).json({
       success: true,
       message: "Registration successful",
       user,
     });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Registration failed",
-      error: error.message,
+    next(error);
+  }
+};
+
+const Users = async (req, res, next) => {
+  try {
+    const users = await User.find({});
+
+    if(!users){
+      return next(ErrorHandler(400, "no users found"));
+    }
+
+    res.status(200).json(
+      { 
+      success: true, 
+      users
+     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      return next(ErrorHandler(404, "User not found"));
+    }
+
+    if (user.avatar && user.avatar.public_id) {
+      await cloudinary.uploader.destroy(user.avatar.public_id, (error, result) => {
+        if (error) {
+          console.error("Cloudinary deletion error:", error);
+        } else {
+          console.log("Cloudinary deletion result:", result);
+        }
+      });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
     });
+
+  } catch (error) {
+    console.error("User delete error:", error);
+    next(ErrorHandler(500, "Server Error"));
   }
 };
 
@@ -64,72 +136,59 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Validate request
     if (!(email && password)) {
       return next(ErrorHandler(400, "Please provide all required fields"));
     }
 
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (!userExists) {
       return next(ErrorHandler(400, "This Email is not Registered."));
     }
 
-    // Check if password is correct
     const isMatch = await bcryptjs.compare(password, userExists.password);
     if (!isMatch) {
       return next(ErrorHandler(400, "Incorrect Password"));
     }
 
-    // Generate JWT token
     const token = jwt.sign({ id: userExists._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "1d"
     });
 
-    // Remove password from user object
     userExists.password = undefined;
 
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      httpOnly: true
+    });
 
-    // Respond with success
     res.status(200).json({
       success: true,
       message: "Login successful",
-      user: userExists,
-      token: token, // Add token to response
+      user: userExists
     });
   } catch (error) {
-    next(error); // Pass the error to the next middleware
+    next(error);
   }
 };
+
 
 const logout = async (req, res) => {
   res.clearCookie("token");
   res.status(200).json({ success: true, message: "Logged out" });
 };
 
-const ForgetPassword = async (req, res) => {
+const ForgetPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    // Validate request
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Please enter a valid email address and try again",
-      });
+        return next(ErrorHandler(400, "Please enter a valid email address and try again"));
     }
 
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (!userExists) {
-      return res.status(400).json({
-        success: false,
-        message: "This Email is not registered.",
-      });
+      return next(ErrorHandler(400, "This Email is not registered"));
     }
 
-    // Generate a unique reset token
     const resetToken = jwt.sign(
       { id: userExists._id },
       process.env.JWT_SECRET,
@@ -138,7 +197,6 @@ const ForgetPassword = async (req, res) => {
       }
     );
 
-    // Send an email with the reset link
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -157,10 +215,7 @@ const ForgetPassword = async (req, res) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Email sending error:", error);
-        return res.status(500).json({
-          success: false,
-          message: "Failed to send email",
-        });
+        return next(ErrorHandler(400, "Failed to send email"));
       }
 
       res.status(200).json({
@@ -170,64 +225,42 @@ const ForgetPassword = async (req, res) => {
       });
     });
   } catch (error) {
-    console.error("Forget Password error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Forget Password failed",
-      error: error.message,
-    });
+    next(error);
   }
 };
 
-const ChangePassword = async (req, res) => {
+const ChangePassword = async (req, res, next) => {
   try {
     const { token } = req.params;
     const { newPassword } = req.body;
     console.log("Received token:", token);
     console.log("Received new password:", newPassword);
 
-    // Validate request
     if (!token || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide both a token and a new password",
-      });
+      return next(ErrorHandler(400, "Please provide both a token and a new password"));
     }
 
-    // Verify the token
     const data = jwt.verify(token, process.env.JWT_SECRET);
     console.log("Token verified, data:", data);
     if (!data) {
-      return res.status(403).json({
-        success: false,
-        message: "Invalid token",
-      });
+      return next(ErrorHandler(400, "invalid_token"));
     }
 
-    // Find the user associated with the token
     const user = await User.findById(data.id);
     console.log("User found:", user);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      return next(ErrorHandler(400, "user not found"));
     }
 
-    // Parse and validate salt rounds
     const saltRounds = parseInt(process.env.HashPassword, 10);
     if (isNaN(saltRounds) || saltRounds <= 0) {
       throw new Error(
         "Invalid salt rounds value in environment variable HashPassword"
       );
     }
-    console.log("Salt rounds:", saltRounds);
 
-    // Hash the new password
     const hashedPassword = await bcryptjs.hash(newPassword, saltRounds);
-    console.log("Hashed new password:", hashedPassword);
 
-    // Update the user's password
     user.password = hashedPassword;
     await user.save();
 
@@ -236,12 +269,58 @@ const ChangePassword = async (req, res) => {
       message: "Password changed successfully",
     });
   } catch (error) {
-    console.error("Server-side error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Change Password failed",
-      error: error.message,
+    next(error);
+  }
+};
+
+const updateSingleUser = async (req, res, next) => {
+  const { id } = req.params;
+  console.log(req.id);
+
+  if(req.id !== id ){
+    return next(ErrorHandler(403, "Unauthorized to update this user"));
+  }
+
+  try {
+    const { name, email, password, phone, avatar, role, isActive } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(ErrorHandler(400, "Invalid User ID format"));
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return next(ErrorHandler(404, "User not found in database"));
+    }
+    if (avatar && avatar !== user.avatar.url) {
+      if (user.avatar && user.avatar.public_id) {
+        await cloudinary.uploader.destroy(user.avatar.public_id);
+      }
+      const result = await cloudinary.uploader.upload(avatar, {
+        folder: "MyHome2U/Users",
+      });
+      user.avatar = {
+        public_id: result.public_id,
+        url: result.secure_url,
+      };
+    }
+
+    user.name = name !== undefined ? name : user.name;
+    user.email = email !== undefined ? email : user.email;
+    user.password = password !== undefined ? await bcryptjs.hash(password, parseInt(process.env.HashPassword, 10)) : user.password;
+    user.phone = phone !== undefined ? phone : user.phone;
+    user.role = role !== undefined ? role : user.role;
+    user.isActive = isActive !== undefined ? isActive : user.isActive;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      user: updatedUser,
     });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -251,4 +330,8 @@ module.exports = {
   logout,
   ForgetPassword,
   ChangePassword,
+  Users,
+  deleteUser,
+  getSingleUser,
+  updateSingleUser
 };
