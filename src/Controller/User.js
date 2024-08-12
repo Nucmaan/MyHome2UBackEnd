@@ -157,7 +157,9 @@ const login = async (req, res, next) => {
     userExists.password = undefined;
 
     res.cookie("token", token, {
-      httpOnly: true
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Ensures cookies are sent over HTTPS in production
+      sameSite: 'None'
     });
 
     res.status(200).json({
