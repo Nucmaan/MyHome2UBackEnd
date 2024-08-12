@@ -1,5 +1,5 @@
 const ErrorHandler = require("../Utils/error");
-const Booking = require("../Model/Booking.JS");
+const Booking = require("../Model/Booking.js");
 const { default: mongoose } = require("mongoose");
 const User = require("../Model/User.js");
 const Property = require("../Model/Property.js")
