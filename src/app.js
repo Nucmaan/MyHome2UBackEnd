@@ -29,7 +29,7 @@ app.use(express.static("public"));
 // Define your routes here (e.g., app.use('/api', apiRouter))
 
 app.get("/", (req, res) => {
-  res.send("WELCOME MY HOME TO YOU API!");
+  res.send("WELCOME MyHome2U API Home Page! ");
 });
 
 const UserRouter = require("./Router/UserRouter.js");
