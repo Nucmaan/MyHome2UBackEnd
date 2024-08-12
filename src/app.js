@@ -6,10 +6,22 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const app = express();
 
-// CORS Configuration
+// List of allowed origins
+const allowedOrigins = [
+  'https://statefrontend.onrender.com',
+  'http://localhost:3000'
+];
+
 app.use(
   cors({
-    origin: '*', // Allow all origins
+    origin: function (origin, callback) {
+      // Check if the origin is in the allowed origins list
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true, // Allows cookies to be sent and received
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Allow specific HTTP methods
   })
