@@ -9,9 +9,15 @@ const app = express();
 // CORS Configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, // Allow all origins
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
-    httpOnly: true, // Set to true to prevent client-side JavaScript from accessing the cookie
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
