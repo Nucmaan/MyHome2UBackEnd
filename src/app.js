@@ -9,16 +9,9 @@ const app = express();
 // CORS Configuration
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    origin: '*', // Allow all origins
+    credentials: true, // Allows cookies to be sent and received
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Allow specific HTTP methods
   })
 );
 
