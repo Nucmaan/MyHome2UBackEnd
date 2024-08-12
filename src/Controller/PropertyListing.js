@@ -1,6 +1,6 @@
 const cloudinary = require("../MiddleWare/Cloudinary.js");
-const Property = require("../Model/Property.js");
-const ErrorHandler = require("../Utils/error.js");
+const Property = require("../Model/Property");
+const ErrorHandler = require("../Utils/error");
 
 const AddProperty = async (req, res, next) => {
   try {

@@ -1,8 +1,8 @@
 const ErrorHandler = require("../Utils/error");
-const Booking = require("../Model/Booking.js");
+const Booking = require("../Model/Booking");
 const { default: mongoose } = require("mongoose");
 const User = require("../Model/User.js");
-const Property = require("../Model/Property.js")
+const Property = require("../Model/Property")
 
 
 const AddNewBooking = async (req, res, next) => {
