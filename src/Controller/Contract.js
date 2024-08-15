@@ -56,11 +56,7 @@ const getAllContracts = async (req, res, next) => {
     try {
       const contracts = await Contract.find({});
       if (contracts.length === 0) {
-        return res.status(200).json({
-          success: true,
-          count: 0,
-          contracts: [], 
-        });
+        return next(ErrorHandler(400, "No contracts found"));
       }
       res.status(200).json({
         success: true,
@@ -77,13 +73,9 @@ const getAllContracts = async (req, res, next) => {
 
     try {
       const ownerContracts = await Contract.find({ owner: id }).populate('property').populate('user').populate('owner');
-  
+
       if (ownerContracts.length === 0) {
-        return res.status(200).json({
-          success: true,
-          count: 0,
-          contracts: [],
-        });
+        return next(ErrorHandler(404, "No contracts found for this owner"));
       }
   
       res.status(200).json({
@@ -101,13 +93,9 @@ const getAllContracts = async (req, res, next) => {
 
     try {
       const userContracts = await Contract.find({ user: id }).populate('property').populate('owner');
-  
+
       if (userContracts.length === 0) {
-        return res.status(200).json({
-          success: true,
-          count: 0,
-          contracts: [],
-        });
+        return next(ErrorHandler(404, "you don't have  any contracts"));
       }
   
       res.status(200).json({

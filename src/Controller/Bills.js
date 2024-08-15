@@ -59,21 +59,25 @@ const AddNewBooking = async (req, res, next) => {
 
 const getAllBills = async (req, res, next) => {
   try {
-    const bill = await Bill.find({}).populate('property').populate('owner').populate('user')
+    const bills = await Bill.find({})
+      .populate('property')
+      .populate('owner') 
+      .populate('user'); 
 
-    if (!bill) {
+    if (!bills) {
       return next(ErrorHandler(400, "No bills found"));
     }
 
     res.status(200).json({
       success: true,
-      count: bill.length,
-      bill,
+      count: bills.length,
+      bill: bills,
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 const getSingleBill = async (req, res, next) => {
     const { id } = req.params;
@@ -90,7 +94,6 @@ const getSingleBill = async (req, res, next) => {
         next(error);
     }
 }
-
 
 const updateBill = async (req, res, next) => {
   
@@ -140,7 +143,7 @@ const getUserBills = async (req, res, next) => {
             .populate('user');
 
         if (!userBills || userBills.length === 0) {
-            return next(new ErrorHandler(404, "No bills found for this user"));
+            return next(ErrorHandler(404, "No bills found for this user"));
         }
         res.status(200).json({
             success: true,

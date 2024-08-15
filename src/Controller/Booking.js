@@ -39,14 +39,13 @@ const AllBookings = async (req, res, next) => {
       if (bookings.length === 0) {
         return next(ErrorHandler(400, "No bookings found"));
       }
-  
       res.status(200).json({
         success: true,
         count: bookings.length,
         bookings,
       });
     } catch (error) {
-      console.error("Error fetching bookings:", error); // Log the error for debugging
+      console.error("Error fetching bookings:", error); 
       next(error);
     }
   };
