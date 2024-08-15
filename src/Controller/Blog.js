@@ -111,6 +111,7 @@ const deletePost = async(req,res,next) => {
     }
 };
 
+
 const updatePost = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -119,52 +120,43 @@ const updatePost = async (req, res, next) => {
             return next(ErrorHandler(400, 'Invalid post ID'));
         }
 
-        // Find the existing post
         const post = await Blog.findById(id);
 
         if (!post) {
             return next(ErrorHandler(404, 'Post not found'));
         }
 
-        // Log existing post data
-        console.log('Post before update:', post);
-
         const { title, shortInfo, content, author, roll } = req.body;
         
-        // Update fields if they are provided
+        
         if (title) post.title = title;
         if (shortInfo) post.shortInfo = shortInfo;
         if (content) post.content = content;
         if (author) post.author = author;
         if (roll) post.roll = roll;
 
-        // Handle image update
+        
         if (req.file) {
-            console.log('New image file:', req.file);
 
-            // Delete the old image from Cloudinary
             if (post.image && post.image.public_id) {
                 await cloudinary.uploader.destroy(post.image.public_id);
             }
 
-            // Upload the new image
+        
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'MyHome2U/blogs',
             });
 
-            console.log('Cloudinary result:', result);
+            
 
-            // Update the post's image details
+            
             post.image = {
                 public_id: result.public_id,
                 url: result.secure_url,
             };
         }
 
-        // Save the updated post
         const updatedPost = await post.save();
-
-        console.log('Post after update:', updatedPost);
 
         res.status(200).json({
             success: true,
@@ -176,7 +168,6 @@ const updatePost = async (req, res, next) => {
         next(error);
     }
 };
-
 
 
 module.exports = {

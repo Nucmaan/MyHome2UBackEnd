@@ -10,6 +10,6 @@ Router.post("/AddPost", upload.single("image"), createPost);
 Router.get("/AllPosts", getAllPosts);
 Router.get("/GetSinglePost/:id", getSinglePost);
 Router.delete("/DeletePost/:id",deletePost);
-Router.put("/UpdatePost/:id",updatePost);
+Router.put("/UpdatePost/:id",upload.single("image"),updatePost);
 
 module.exports = Router;
