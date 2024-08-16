@@ -32,13 +32,19 @@ const getSingleUser = async (req, res, next) => {
   }
 };
 
+
 const Register = async (req, res, next) => {
   try {
-    const { name, email, password, phone, avatar, role, isActive } = req.body;
+    const { name, email, password, phone, gender } = req.body;
+     const avatar = req.file;
 
-    if (!(name && email && password && phone )) {
+    if (!(name && email && password && phone && gender )) {
       return next(ErrorHandler(404, "all fields are required"));
     }
+
+    if (!avatar){
+      return next(ErrorHandler(400, 'Image is required'));
+      }
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -52,7 +58,7 @@ const Register = async (req, res, next) => {
 
     const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
-    const result = await cloudinary.uploader.upload(avatar, {
+    const result = await cloudinary.uploader.upload(avatar.path, {
       folder: "MyHome2U/Users",
     });
     
@@ -68,11 +74,10 @@ const Register = async (req, res, next) => {
         public_id: public_id,
         url: profile_Image_Url,
       },
-      role,
-      isActive
+      gender,
     });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Registration successful",
       user,
@@ -282,14 +287,10 @@ const ChangePassword = async (req, res, next) => {
 
 const updateSingleUser = async (req, res, next) => {
   const { id } = req.params;
-  console.log(req.id);
-
-  if(req.id !== id ){
-    return next(ErrorHandler(403, "Unauthorized to update this user"));
-  }
 
   try {
-    const { name, email, password, phone, avatar, role, isActive } = req.body;
+    const { name, email, password, phone, role, gender, isActive } = req.body;
+    const avatar = req.file;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(ErrorHandler(400, "Invalid User ID format"));
@@ -299,13 +300,16 @@ const updateSingleUser = async (req, res, next) => {
     if (!user) {
       return next(ErrorHandler(404, "User not found in database"));
     }
-    if (avatar && avatar !== user.avatar.url) {
+
+    if (avatar) {
       if (user.avatar && user.avatar.public_id) {
         await cloudinary.uploader.destroy(user.avatar.public_id);
       }
-      const result = await cloudinary.uploader.upload(avatar, {
+
+      const result = await cloudinary.uploader.upload(avatar.path, {
         folder: "MyHome2U/Users",
       });
+
       user.avatar = {
         public_id: result.public_id,
         url: result.secure_url,
@@ -317,6 +321,7 @@ const updateSingleUser = async (req, res, next) => {
     user.password = password !== undefined ? await bcryptjs.hash(password, parseInt(process.env.HashPassword, 10)) : user.password;
     user.phone = phone !== undefined ? phone : user.phone;
     user.role = role !== undefined ? role : user.role;
+    user.gender = gender !== undefined ? gender : user.gender;
     user.isActive = isActive !== undefined ? isActive : user.isActive;
 
     const updatedUser = await user.save();
@@ -330,6 +335,7 @@ const updateSingleUser = async (req, res, next) => {
     next(error);
   }
 };
+
 
 module.exports = {
   Register,
