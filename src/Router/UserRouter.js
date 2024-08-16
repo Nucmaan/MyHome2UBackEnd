@@ -24,7 +24,7 @@ Router.post("/ForgetPassword", ForgetPassword);
 Router.post("/changePassword/:token", ChangePassword); 
 Router.delete("/delete/:id",deleteUser);
 Router.get("/getSingleUser/:id",getSingleUser);
-Router.put("/updateSingleUser/:id", verifyToken,upload.single("avatar"),updateSingleUser);
+Router.put("/updateSingleUser/:id",upload.single("avatar"),updateSingleUser);
 
 module.exports = Router;
 

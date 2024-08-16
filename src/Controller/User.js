@@ -290,6 +290,7 @@ const updateSingleUser = async (req, res, next) => {
 
   try {
     const { name, email, password, phone, role, gender, isActive } = req.body;
+    
     const avatar = req.file;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -302,6 +303,7 @@ const updateSingleUser = async (req, res, next) => {
     }
 
     if (avatar) {
+
       if (user.avatar && user.avatar.public_id) {
         await cloudinary.uploader.destroy(user.avatar.public_id);
       }
@@ -314,6 +316,7 @@ const updateSingleUser = async (req, res, next) => {
         public_id: result.public_id,
         url: result.secure_url,
       };
+      
     }
 
     user.name = name !== undefined ? name : user.name;
