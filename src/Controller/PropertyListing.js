@@ -15,18 +15,23 @@ const AddProperty = async (req, res, next) => {
       deposit,
       houseType,
       parking,
-      image,
       owner,
       status,
     } = req.body;
+
+    const image = req.file
 
     if (
       !(title && description && address && city && bedrooms && bathrooms && price && deposit && houseType && parking && image && owner && status )
     ) {
       return next(ErrorHandler(400, "Please provide all required fields"));
     }
+
+    if (!image) {
+      return next(ErrorHandler(400, "Image is required"));
+    }
   
-    const result = await cloudinary.uploader.upload(image, {
+    const result = await cloudinary.uploader.upload(image.path, {
       folder: "MyHome2U/propertyListing",
     });
 
@@ -128,6 +133,7 @@ const GetSingleProperty = async (req, res, next) => {
 };
 
 const UpdateSingleProperty = async (req, res, next) => {
+  
   const { id } = req.params;
   const {
     title,
@@ -140,9 +146,9 @@ const UpdateSingleProperty = async (req, res, next) => {
     deposit,
     houseType,
     parking,
-    image,
     status,
   } = req.body;
+  const image = req.file;
 
   try {
     let property = await Property.findById(id);
@@ -151,19 +157,35 @@ const UpdateSingleProperty = async (req, res, next) => {
       return next(ErrorHandler(404, `Property with ID: ${id} not found`));
     }
 
-    if (image && image !== property.image.url) {
+    if (image) {
+    
+      // Delete the old image from Cloudinary
       if (property.image && property.image.public_id) {
         await cloudinary.uploader.destroy(property.image.public_id);
       }
-      const result = await cloudinary.uploader.upload(image, {
+      // Upload the new image to Cloudinary
+      const result = await cloudinary.uploader.upload(image.path, {
         folder: "MyHome2U/propertyListing",
       });
       property.image = {
         public_id: result.public_id,
         url: result.secure_url,
       };
-    }
 
+    }
+    
+   // if (image && image !== property.image.url) {
+     // if (property.image && property.image.public_id) {
+       // await cloudinary.uploader.destroy(property.image.public_id);
+      //}
+      //const result = await cloudinary.uploader.upload(image.path, {
+        //folder: "MyHome2U/propertyListing",
+     /// });
+      //property.image = {
+       // public_id: result.public_id,
+        //url: result.secure_url,
+      //};
+    //}
 
     // Update the property with the new values
     property.title = title || property.title;

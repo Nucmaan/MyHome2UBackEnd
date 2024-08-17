@@ -287,9 +287,8 @@ const ChangePassword = async (req, res, next) => {
 
 const updateSingleUser = async (req, res, next) => {
   const { id } = req.params;
-
   try {
-    const { name, email, password, phone, role, gender, isActive } = req.body;
+    const { name, email, password, phone, role, gender, isActive} = req.body;
     
     const avatar = req.file;
 
@@ -301,6 +300,7 @@ const updateSingleUser = async (req, res, next) => {
     if (!user) {
       return next(ErrorHandler(404, "User not found in database"));
     }
+
 
     if (avatar) {
 
