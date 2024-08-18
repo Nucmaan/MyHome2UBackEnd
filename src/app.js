@@ -50,6 +50,7 @@ const ContractRouter = require("./Router/Contract.js");
 const BillRouter = require("./Router/Bills.js");
 const SocialMediaRouter = require("./Router/SocialMedia.js");
 const BlogRouter = require("./Router/Blog.js");
+const SectionRouter = require("./Router/AboutUsRouter.js");
 
 app.use("/api/MyHome2U/user", UserRouter);
 app.use("/api/MyHome2U/property", PropertyRouter);
@@ -58,6 +59,7 @@ app.use("/api/MyHome2U/contract", ContractRouter);
 app.use("/api/MyHome2U/bills", BillRouter);
 app.use("/api/MyHome2U/socialMedia", SocialMediaRouter);
 app.use("/api/MyHome2U/Blog",BlogRouter);
+app.use("/api/MyHome2U/AboutUs", SectionRouter);
 
 
 // client error handling
