@@ -51,6 +51,7 @@ const BillRouter = require("./Router/Bills.js");
 const SocialMediaRouter = require("./Router/SocialMedia.js");
 const BlogRouter = require("./Router/Blog.js");
 const SectionRouter = require("./Router/AboutUsRouter.js");
+const HeroImageRouter = require("./Router/HeroImage.js");
 
 app.use("/api/MyHome2U/user", UserRouter);
 app.use("/api/MyHome2U/property", PropertyRouter);
@@ -60,6 +61,7 @@ app.use("/api/MyHome2U/bills", BillRouter);
 app.use("/api/MyHome2U/socialMedia", SocialMediaRouter);
 app.use("/api/MyHome2U/Blog",BlogRouter);
 app.use("/api/MyHome2U/AboutUs", SectionRouter);
+app.use("/api/MyHome2U/HeroImage",HeroImageRouter);
 
 
 // client error handling
