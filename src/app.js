@@ -10,7 +10,7 @@ const app = express();
 const allowedOrigins = [
   'https://statefrontend.onrender.com',
   'http://localhost:3000',
-  'https://myhome2u.vercel.app/'
+  'https://myhome2u.vercel.app'
 ];
 
 app.use(
