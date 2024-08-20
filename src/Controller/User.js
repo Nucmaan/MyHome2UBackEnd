@@ -5,7 +5,7 @@ const nodemailer = require("nodemailer");
 const ErrorHandler = require("../Utils/error.js");
 const cloudinary = require("../MiddleWare/Cloudinary.js");
 
-const frontendUrl = process.env.FRONTEND_URL;
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 const mongoose = require('mongoose');
 
 const getSingleUser = async (req, res, next) => {
