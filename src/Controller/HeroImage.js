@@ -2,6 +2,7 @@ const ErrorHandler = require("../Utils/error");
 const cloudinary = require("../MiddleWare/Cloudinary.js");
 const { default: mongoose } = require("mongoose");
 const HeroImage = require("../Model/HeroImage.js");
+const fs = require('fs');
 
 
 const AdHeroImage = async (req, res, next) => {
@@ -16,6 +17,14 @@ const AdHeroImage = async (req, res, next) => {
     const result = await cloudinary.uploader.upload(heroImage.path, {
       folder: "MyHome2U/HeroImage",
     });
+
+    if(!result){
+      fs.unlink(heroImage.path);
+      return next(ErrorHandler(500, "Error uploading to Cloudinary"));
+    }
+
+    fs.unlinkSync(heroImage.path);
+
 
     const newHeroImage = await HeroImage.create({
       imageUrl: {

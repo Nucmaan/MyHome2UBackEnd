@@ -1,6 +1,8 @@
 const cloudinary = require("../MiddleWare/Cloudinary.js");
 const Property = require("../Model/Property");
 const ErrorHandler = require("../Utils/error");
+const fs = require('fs');
+
 
 const AddProperty = async (req, res, next) => {
   try {
@@ -34,6 +36,14 @@ const AddProperty = async (req, res, next) => {
     const result = await cloudinary.uploader.upload(image.path, {
       folder: "MyHome2U/propertyListing",
     });
+
+    if(!result){
+      fs.unlink(image.path);
+      return next(ErrorHandler(500, "Error uploading image to Cloudinary"));
+    }
+
+    fs.unlinkSync(image.path); // delete the temporary file
+
 
     const property = new Property({
       title,

@@ -2,6 +2,7 @@ const AboutUs = require("../Model/AboutUs");
 const ErrorHandler = require("../Utils/error");
 const cloudinary = require("../MiddleWare/Cloudinary.js");
 const { default: mongoose } = require("mongoose");
+const fs = require('fs');
 
 
 const AddSection = async (req, res, next) => {
@@ -20,6 +21,14 @@ const AddSection = async (req, res, next) => {
     const result = await cloudinary.uploader.upload(sectionImage.path, {
       folder: "MyHome2U/AboutUsPage",
     });
+
+    if(!result) {
+      fs.unlink(sectionImage.path);
+      return next(ErrorHandler(500, "Failed to upload image"));
+    }
+
+    fs.unlinkSync(sectionImage.path);
+    
 
     const newSection = await AboutUs.create({
       sectionTitle,

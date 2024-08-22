@@ -74,6 +74,7 @@ const Register = async (req, res, next) => {
     
     const profile_Image_Url = result.secure_url;
     const public_id = result.public_id;
+    
 
     const user = await User.create({
       name,

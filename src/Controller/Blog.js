@@ -3,6 +3,8 @@ const Blog = require('../Model/Blog');
 const cloudinary = require('../MiddleWare/Cloudinary');
 const ErrorHandler = require('../Utils/error');
 const { default: mongoose } = require('mongoose');
+const fs = require('fs');
+
 
 const createPost = async (req, res, next) => {
   try {
@@ -20,6 +22,13 @@ const createPost = async (req, res, next) => {
     const result = await cloudinary.uploader.upload(image.path,{
       folder: 'MyHome2U/blogs',
     });
+
+    if(!result){
+        fs.unlink(image.path);
+        return next(ErrorHandler(500, 'Error uploading image to cloudinary'));
+    }
+
+    fs.unlinkSync(image.path);
 
     const imageUrl = result.secure_url;
     const ImageId = result.public_id;
@@ -168,7 +177,6 @@ const updatePost = async (req, res, next) => {
         next(error);
     }
 };
-
 
 module.exports = {
   createPost,
