@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const ErrorHandler = require("../Utils/error.js");
 const cloudinary = require("../MiddleWare/Cloudinary.js");
+const fs = require('fs');
+
 
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 const mongoose = require('mongoose');
@@ -60,7 +62,15 @@ const Register = async (req, res, next) => {
 
     const result = await cloudinary.uploader.upload(avatar.path, {
       folder: "MyHome2U/Users",
+
     });
+
+         if(!result ){
+          fs.unlink(avatar.path);
+          return next(ErrorHandler(500, 'Failed to upload image to cloudinary')); 
+         }
+
+         fs.unlinkSync(avatar.path);
     
     const profile_Image_Url = result.secure_url;
     const public_id = result.public_id;
@@ -76,6 +86,7 @@ const Register = async (req, res, next) => {
       },
       gender,
     });
+
 
     res.status(200).json({
       success: true,
