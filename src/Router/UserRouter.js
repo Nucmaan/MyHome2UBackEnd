@@ -1,5 +1,4 @@
 const express = require("express");
-const verifyToken = require("../MiddleWare/verifyToken");
 const {
   Register,
   login,
@@ -10,7 +9,10 @@ const {
   deleteUser,
   getSingleUser,
   updateSingleUser,
+  getUserTokenInfo
 } = require("../Controller/User");
+
+const verifyToken = require("../MiddleWare/verifyToken");
 
 const upload = require("../MiddleWare/multer");
 
@@ -25,6 +27,7 @@ Router.post("/changePassword/:token", ChangePassword);
 Router.delete("/delete/:id",deleteUser);
 Router.get("/getSingleUser/:id",getSingleUser);
 Router.put("/updateSingleUser/:id",upload.single("avatar"),updateSingleUser);
+Router.get("/getUserTokenInfo/:token",getUserTokenInfo);
 
 module.exports = Router;
 

@@ -352,6 +352,37 @@ const updateSingleUser = async (req, res, next) => {
   }
 };
 
+const getUserTokenInfo = async (req, res, next) => {
+  try {
+    const { token } = req.params; // Destructure token from req.params
+
+    if (!token) {
+      return next(ErrorHandler(401, "No token provided"));
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
+
+    if (!decoded) {
+      return next(ErrorHandler(401, "Invalid token"));
+    }
+
+    const user = await User.findById(decoded.id); // Find the user by decoded ID
+
+    if (!user) {
+      return next(ErrorHandler(404, "User not found in database"));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User token info",
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 module.exports = {
   Register,
@@ -362,5 +393,6 @@ module.exports = {
   Users,
   deleteUser,
   getSingleUser,
-  updateSingleUser
+  updateSingleUser,
+  getUserTokenInfo
 };
