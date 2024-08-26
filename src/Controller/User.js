@@ -301,7 +301,7 @@ const ChangePassword = async (req, res, next) => {
 const updateSingleUser = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const { name, email, password, phone, role, gender, isActive} = req.body;
+    const { name, email, password, phone, role, gender, isActive } = req.body;
     
     const avatar = req.file;
 
