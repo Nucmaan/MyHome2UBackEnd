@@ -7,17 +7,19 @@ const cors = require("cors");
 const app = express();
 
 // List of allowed origins
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://192.168.0.29:5000',
-  'https://myhome2u.online',
-];
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+
+//const allowedOrigins = [
+  //'http://localhost:3000',
+  //'http://192.168.0.29:5000',
+  //'https://myhome2u.online',
+//];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Check if the origin is in the allowed origins list
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -27,7 +29,6 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Allow specific HTTP methods
   })
 );
-
 
 
 // Middleware to parse JSON and URL-encoded data
